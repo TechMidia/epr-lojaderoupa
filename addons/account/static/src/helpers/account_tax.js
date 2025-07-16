@@ -1001,7 +1001,11 @@ export const accountTaxHelpers = {
                     tax_amounts[delta_field] += amount_to_distribute;
 
                     if (index === 0) {
-                        const base_rounding_key = [currency.id, base_line.is_refund];
+                        const base_rounding_key = [
+                            tax_amounts.currency.id,
+                            base_line.is_refund,
+                            base_line.computation_key,
+                        ];
                         const base_amounts = total_per_base[base_rounding_key];
                         base_amounts[delta_field] += amount_to_distribute;
                     }
@@ -1096,12 +1100,6 @@ export const accountTaxHelpers = {
                 continue;
             }
 
-            const base_line = base_amounts.base_lines.sort(
-                (a, b) =>
-                    a.tax_details.total_included_currency - b.tax_details.total_included_currency
-            )[0];
-
-            const tax_details = base_line.tax_details;
             let delta_base_amount_currency;
             let delta_base_amount;
             if (country_code === "PT") {
@@ -1126,8 +1124,25 @@ export const accountTaxHelpers = {
                 continue;
             }
 
-            tax_details.delta_total_excluded_currency += delta_base_amount_currency;
-            tax_details.delta_total_excluded += delta_base_amount;
+            // Dispatch the base delta evenly on the base lines, starting from the biggest line.
+            const factors = Array(base_amounts.base_lines.length).fill({ factor: 1.0 / base_amounts.base_lines.length });
+            const base_lines_sorted = base_amounts.base_lines.sort((a, b) => 
+                a.tax_details.total_included_currency - b.tax_details.total_included_currency
+            );
+            for (const [delta_currency_indicator, delta_currency, delta_amount] of [
+                ["_currency", base_amounts.currency, delta_base_amount_currency],
+                ["", company.currency_id, delta_base_amount],
+            ]) {
+                const amounts_to_distribute = this.distribute_delta_amount_smoothly(
+                    delta_currency.decimal_places,
+                    delta_amount,
+                    factors,
+                );
+
+                for (const [i, base_line] of base_lines_sorted.entries()) {
+                    base_line.tax_details[`delta_total_excluded${delta_currency_indicator}`] += amounts_to_distribute[i];
+                }
+            }
         }
     },
 
