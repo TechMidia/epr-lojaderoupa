@@ -2576,6 +2576,12 @@ class Binary(Field):
             super().compute_value(records)
 
     def read(self, records):
+        def human_size_b(sz: float | str) -> bytes | typing.Literal[False]:
+            hsz = human_size(sz)
+            if hsz is False:
+                return False
+            return hsz.encode("utf-8")
+
         # values are stored in attachments, retrieve them
         assert self.attachment
         domain = [
@@ -2583,9 +2589,9 @@ class Binary(Field):
             ('res_field', '=', self.name),
             ('res_id', 'in', records.ids),
         ]
-        # Note: the 'bin_size' flag is handled by the field 'datas' itself
+        bin_size = records.env.context.get('bin_size')
         data = {
-            att.res_id: att.datas
+            att.res_id: human_size_b(att.file_size) if bin_size else att.datas
             for att in records.env['ir.attachment'].sudo().search(domain)
         }
         records.env.cache.insert_missing(records, self, map(data.get, records._ids))
