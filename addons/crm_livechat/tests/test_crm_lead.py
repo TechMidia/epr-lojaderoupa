@@ -101,7 +101,7 @@ class TestLivechatLead(HttpCase, TestCrmCommon):
         self.livechat_channel.user_ids = bob_operator
         self.env["mail.presence"]._update_presence(bob_operator)
         data = self.make_jsonrpc_request(
-            "/im_livechat/get_session", {"channel_id": self.livechat_channel.id}
+            "/im_livechat/get_session", {'channel_id': self.livechat_channel.id}
         )
         channel = self.env["discuss.channel"].browse(data["channel_id"])
         message = channel.message_post(

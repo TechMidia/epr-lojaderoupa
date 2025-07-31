@@ -62,7 +62,7 @@ class TestImLivechatMessage(ChatbotCase, MailCommon):
             "/im_livechat/get_session",
             {
                 "channel_id": self.livechat_channel.id,
-                "chatbot_script_id": self.chatbot_script.id,
+                'chatbot_script_id': self.chatbot_script.id,
                 "persisted": True,
             },
         )
