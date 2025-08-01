@@ -35,7 +35,7 @@ class TestGetDiscussChannel(TestImLivechatCommon, MailCommon):
             data = self.make_jsonrpc_request(
                 "/im_livechat/get_session",
                 {
-                    "previous_operator_id": operator.partner_id.id,
+                    'previous_operator_id': operator.partner_id.id,
                     "channel_id": self.livechat_channel.id,
                 },
             )["store_data"]
@@ -304,7 +304,7 @@ class TestGetDiscussChannel(TestImLivechatCommon, MailCommon):
             "/im_livechat/get_session",
             {
                 "channel_id": self.livechat_channel.id,
-                "previous_operator_id": operator.partner_id.id,
+                'previous_operator_id': operator.partner_id.id,
             },
         )
         channel = self.env["discuss.channel"].browse(data["channel_id"])
